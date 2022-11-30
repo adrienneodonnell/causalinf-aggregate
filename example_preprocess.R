@@ -1,8 +1,7 @@
 ########################################################
 library(dplyr)
 
-#Step 0. Read in data. For continuous covariate L, create a copy called LS
-#without LOCF (we only want to aggregate observed L).
+#Step 0. Read in data. For continuous covariate L, create a copy called LS without LOCF (we only want to aggregate observed L).
 dat_pre1 <- read.csv(file = 'example_dat.csv')
 dat_pre2 <- dat_pre1 %>% mutate(LS = ifelse(V==1, L, NA))
 head(dat_pre2)
@@ -30,15 +29,12 @@ dat_pre6 <- select(dat_pre5,-c(Alag,pos_A_pre,position))
 head(dat_pre5)
 
 #Step 4. Compare position of measured confounder with treatment within an interval.
-#If treatment is initiated in interval s and there is a post-treatment covariate 
-#measurement in interval s, push that covariate measurement to interval s+1.
+#If treatment is initiated in interval s and there is a post-treatment covariate measurement in interval s, push that covariate measurement to interval s+1.
 dat_pre7 <- dat_pre6 %>%
   mutate(w_new=ifelse(V==1 & pos_V>pos_A & is.na(pos_A)==F,w+1,w))
 head(dat_pre7)
 
-#Step 5. Aggregate information across the new interval. Take the mean of LS
-#and the max of A, V, and Y. Take the sum of the number of visits in an interval
-#for PNA. Rename variables.
+#Step 5. Aggregate information across the new interval. Take the mean of LS and the max of A, V, and Y. Take the sum of the number of visits in an interval for PNA. Rename variables.
 dat_pre8 <- dat_pre7 %>%
   group_by(id, w_new) %>%
   dplyr::summarize(LS_agg=mean(LS,na.rm=T),
